@@ -1,0 +1,58 @@
+.clear {
+  background-image: url(https://th.bing.com/th/id/R.422e19ab92612712ea42e98e93934c8e?rik=%2fieibfnFWJ2FEQ&riu=http%3a%2f%2fwww.wallfizz.com%2fnature%2fcouche-de-soleil%2f3078-soleil-rouge-WallFizz.jpg&ehk=fAwtwQpQatmKkynsnPuVayp2ZoZW0WF8UB7mkofMMCw%3d&risl=&pid=ImgRaw&r=0);
+}
+.clouds {
+  background-image: url(https://images6.alphacoders.com/349/thumb-1920-349613.jpg);
+}
+.rain {
+  background-image: url(https://th.bing.com/th/id/OIP.cOMcbouaj0AQZpqKuogI1wHaEK?pid=ImgDet&rs=1);
+}
+.snow {
+  background-image: url(https://th.bing.com/th/id/OIP.d7oyk6pjws9QYk_8mEFG8QHaEK?pid=ImgDet&rs=1);
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  text-align: center;
+  background-position: center;
+  background-size: cover;
+  /* color: #fff; */
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+  font-size: 3em;
+  position: relative;
+}
+
+i.wi {
+  font-size: 4em;
+  line-height: 3em;
+}
+
+h2 {
+  font-size: 2em;
+}
+
+#tooltip {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 120px;
+  color: #fff;
+  background-color: #222;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 12px;
+  transition: opacity 0.3s, top 0.5s;
+}
+
+h1:hover #tooltip {
+  top: -40px;
+  opacity: 1;
+}
