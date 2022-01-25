@@ -1,80 +1,104 @@
+const timeEl = document.getElementById('time');
+const dateEl = document.getElementById('date');
+const currentWeatherItemsEl = document.getElementById('current-weather-items');
+const timezone = document.getElementById('time-zone');
+const countryEl = document.getElementById('country');
+const weatherForecastEl = document.getElementById('weather-forecast');
+const currentTempEl = document.getElementById('current-temp');
 
 
-function capitalise(str){
-    return str[0].toUpperCase() + str.slice(1);
-}
-//? Fonction asynchrone
-async function main(withIP = true){
-   
+const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
+const months = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    let ville;
+const API_KEY ='49cc8c821cd2aff9af04c9f98c36eb74';
 
-    if(withIP){
+setInterval(() => {
+    const time = new Date();
+    const month = time.getMonth();
+    const date = time.getDate();
+    const day = time.getDay();
+    const hour = time.getHours();
+    const hoursIn12HrFormat = hour >= 13 ? hour %12: hour
+    const minutes = time.getMinutes();
+    const ampm = hour >=12 ? 'PM' : 'AM'
 
-        //! 1) Chopper l'IP de la page qui ouvre le lien    
-        //? Appel de mon API/ Await attend effectuer la fonction pour faire la suivante
-        const ip = await fetch('https://api.ipify.org?format=json') 
-        //? transformer le  resultat en json
-        .then(resultat => resultat.json())
-        //? Recuperation de mon IP
-        .then(json => json.ip);
-    
-    
-        //! 2) Chopper la ville grace a l'adresse IP
-        //? Appel de mon API avec utilisation de l'ip/ Await attend effectuer la fonction pour faire la suivante
-        ville = await fetch('http://ip-api.com/json/' + ip)
-        //? transformer le  resultat en json
-        .then(resultat => resultat.json())
-        .then(json => json.city);
-    
-    }else {
-        ville = document.querySelector('#ville').textContent
-    }
-    //! 3) Chopper les infos meteo de la ville
-    //? Appel de mon API pour voir le temp dans la ville/ Await attend effectuer la fonction pour faire la suivante
-    const meteo = await fetch(`http://api.weatherstack.com/current?access_key=710a5ea8d04a151e67f1208874f1992a&query=${ville}`)
-    //? transformer le  resultat en json
-    .then(resultat => resultat.json())
-    //? Recuperation de la meteo
-    .then(json => json);
+    timeEl.innerHTML = (hoursIn12HrFormat < 10? '0'+hoursIn12HrFormat : hoursIn12HrFormat) + ':' + (minutes < 10? '0'+minutes: minutes)+ ' ' + `<span id="am-pm">${ampm}</span>`
 
-     
+    dateEl.innerHTML = days[day] + ', ' + date+ ' ' + months[month]
 
-    //!) Afficher les informations 
-    displayWeatherInfos(meteo)
-}
-//!) Afficher les informations 
-function displayWeatherInfos(data){
-    // console.log(data);
-    const name = data.location.name;
-    const temperature = data.current.temperature;
-    const conditions = data.current.weather_icons[0];
-    const description = data.current.weather_descriptions[0];
-    // console.log(conditions);
+}, 1000);
 
-    document.querySelector('#ville').textContent = name;
-    document.querySelector('#temperature').textContent = Math.round(temperature);
-    document.querySelector('#conditions').textContent = capitalise(description);
-    document.querySelector('#image').src = conditions;
+getWeatherData()
+function getWeatherData () {
+    navigator.geolocation.getCurrentPosition((success) => {
+        
+        let {latitude, longitude } = success.coords;
 
-    document.body.className = description.toLowerCase();
-    console.log(description);
+        fetch(`https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=hourly,minutely&units=metric&appid=${API_KEY}`).then(res => res.json()).then(data => {
+
+        console.log(data)
+        showWeatherData(data);
+        })
+
+    })
 }
 
-//!) Rendre la ville editable
-const ville = document.querySelector('#ville');
+function showWeatherData (data){
+    let {humidity, pressure, sunrise, sunset, wind_speed} = data.current;
 
-ville.addEventListener('click', () => {
-    ville.contentEditable = true;
-})
-ville.addEventListener('keydown', (e) => {
-    if(e.keyCode === 13 ){
-        e.preventDefault();
-        ville.contentEditable = false;
-        main(false);
+    timezone.innerHTML = data.timezone;
+    countryEl.innerHTML = data.lat + 'N ' + data.lon+'E'
 
-    }
-})
+    currentWeatherItemsEl.innerHTML = 
+    `<div class="weather-item">
+        <div>Humidité</div>
+        <div>${humidity}%</div>
+    </div>
+    <div class="weather-item">
+        <div>Pressure</div>
+        <div>${pressure}</div>
+    </div>
+    <div class="weather-item">
+        <div>Wind Speed</div>
+        <div>${wind_speed}</div>
+    </div>
+    <div class="weather-item">
+        <div>Sunrise</div>
+        <div>${window.moment(sunrise * 1000).format('HH:mm a')}</div>
+    </div>
+    <div class="weather-item">
+        <div>Sunset</div>
+        <div>${window.moment(sunset*1000).format('HH:mm a')}</div>
+    </div>
+    
+    
+    `;
+
+    let otherDayForcast = ''
+    data.daily.forEach((day, idx) => {
+        if(idx == 0){
+            currentTempEl.innerHTML = `
+            <img src="http://openweathermap.org/img/wn//${day.weather[0].icon}@4x.png" alt="weather icon" class="w-icon">
+            <div class="other">
+                <div class="day">${window.moment(day.dt*1000).format('dddd')}</div>
+                <div class="temp">Night - ${day.temp.night}&#176;C</div>
+                <div class="temp">Day - ${day.temp.day}&#176;C</div>
+            </div>
+            
+            `
+        }else{
+            otherDayForcast += `
+            <div class="weather-forecast-item">
+                <div class="day">${window.moment(day.dt*1000).format('ddd')}</div>
+                <img src="http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" alt="weather icon" class="w-icon">
+                <div class="temp">Night - ${day.temp.night}&#176;C</div>
+                <div class="temp">Day - ${day.temp.day}&#176;C</div>
+            </div>
+            
+            `
+        }
+    })
 
 
-main();
+    weatherForecastEl.innerHTML = otherDayForcast;
+}
